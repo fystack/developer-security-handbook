@@ -1,10 +1,11 @@
 # Security handbook for developers
-
+<div class="title-block" style="text-align: center;" align="center">
 <div align="center">
-  <img src="pepe-handbook.png" alt="Security Handbook">
+  <img src="pepe-handbook.jpg" alt="Security Handbook">
+</div>
 </div>
 
-> *"Hackers don’t break in — they walk through the door you left open."* - Gene Spafford
+> *"Hackers don’t break in — they walk through the door you left open."* 
 
 ## 1. SSH Keys: Hackers' Easiest Target & Prime Hotspots
 Let's be honest—every developer, at least once, has raced through ssh-keygen in a caffeine-fueled haze, hammered Enter three times to skip the passphrase, and thought, "I'll add it later… maybe." 🤷‍♂️ But guess what? That heroic shortcut is like leaving your car unlocked with the keys in the ignition and a "Please Steal Me" bumper sticker.
