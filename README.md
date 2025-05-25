@@ -1,7 +1,7 @@
 # Security handbook for developers
 <div class="title-block" style="text-align: center;" align="center">
 <div align="center">
-  <img src="pepe-handbook.jpg" alt="Security Handbook">
+  <img src="pepe.jpg" alt="Security Handbook">
 </div>
 </div>
 
