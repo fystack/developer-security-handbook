@@ -1,5 +1,11 @@
 # Security handbook for developers
 
+<div align="center">
+  <img src="pepe-handook.png" alt="Security Handbook">
+</div>
+
+> *"Hackers don’t break in — they walk through the door you left open."* - Gene Spafford
+
 ## 1. SSH Keys: Hackers' Easiest Target & Prime Hotspots
 Let's be honest—every developer, at least once, has raced through ssh-keygen in a caffeine-fueled haze, hammered Enter three times to skip the passphrase, and thought, "I'll add it later… maybe." 🤷‍♂️ But guess what? That heroic shortcut is like leaving your car unlocked with the keys in the ignition and a "Please Steal Me" bumper sticker.
 
@@ -176,6 +182,8 @@ curl https://suspicious-site.com/nodejs.tar.gz
 **Pro Tip**: Enable safe browsing in Chrome/Firefox/Brave and consider using DNS filtering services like Cloudflare for Families (`1.1.1.3`) to block known malicious domains automatically.
 
 **Remember**: In security, paranoia is not a bug—it's a feature. That extra 30 seconds of verification could save your entire infrastructure from compromise.
+
+
 
 5. Handling attachments, files safely
 
