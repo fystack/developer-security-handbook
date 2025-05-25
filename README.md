@@ -1,7 +1,7 @@
 # Security handbook for developers
 
 <div align="center">
-  <img src="pepe-handook.png" alt="Security Handbook">
+  <img src="pepe-handbook.png" alt="Security Handbook">
 </div>
 
 > *"Hackers don’t break in — they walk through the door you left open."* - Gene Spafford
