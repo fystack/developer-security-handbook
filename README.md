@@ -102,6 +102,117 @@ The open-source package ecosystems: npm, PyPI, Go modules and beyond are prime r
    npm info <package>
    pip index versions <package>
 
+### 4. 🐳 Don't Let Docker Be Your Trojan Horse: Lock Down Your Containers
+Containers are like magic boxes: lightweight, portable, and fast. But guess what? If you treat them like black boxes and skip security, they’ll behave like Pandora’s Box—spilling vulnerabilities into your entire infrastructure.
+
+> A container isn't a sandbox unless you make it one.
+
+- **[Tesla Kubernetes Hack (2018)](https://arstechnica.com/information-technology/2018/02/tesla-cloud-resources-are-hacked-to-run-cryptocurrency-mining-malware/)** – Attackers exploited an open Kubernetes dashboard to deploy cryptominers using Docker containers.
+
+- **[Docker Hub Data Breach (2019)](https://thehackernews.com/2019/04/docker-hub-data-breach.html)** – Docker's own registry was breached, exposing 190,000 user credentials and potentially affecting CI/CD pipelines.
+
+- **[TeamTNT Docker API Attacks (2020–2021)](https://www.bleepingcomputer.com/news/security/teamtnt-hackers-target-your-poorly-configured-docker-servers/)** – The TeamTNT group exploited unauthenticated Docker daemons to run cryptominers and harvest credentials.
+
+- **[Kinsing Malware on Docker (2020)](https://www.aquasec.com/blog/threat-alert-kinsing-malware-container-vulnerability/)** – Kinsing malware abused exposed Docker APIs to deploy mining containers and scan for SSH creds.
+
+- **[Graboid Docker Worm (2019)](https://unit42.paloaltonetworks.com/graboid-first-ever-cryptojacking-worm-found-in-images-on-docker-hub/)** – The first Docker worm spread through unsecured Docker daemons, mining crypto on infected hosts.
+
+- **[SaltStack RCE via Docker (2020)](https://www.immersivelabs.com/resources/blog/hackers-are-currently-attacking-vulnerable-saltstack-systems/)** – Attackers leveraged RCE flaws in SaltStack to compromise Docker hosts and run cryptominers.
+
+- **[Dero Miner Targeting Docker (2025)](https://www.techradar.com/pro/security/misconfigured-docker-instances-are-being-hacked-to-mine-cryptocurrency)** – A cryptomining worm exploited misconfigured Docker daemons to mine the Dero privacy coin.
+
+#### Best Practices for Secure Docker Usage
+
+1. Never Run Containers as Root
+- Add a USER directive in your Dockerfile to drop privileges.
+- Avoid --privileged or mounting /proc, /sys, /dev.
+```
+# ❌ Don't do this
+# USER root
+
+# ✅ Use a non-root user
+RUN useradd -m appuser
+USER appuser
+```
+2. Use Minimal Base Images
+- Cut the bloat: more tools = more vulnerabilities.
+- Use distroless, alpine, or scratch images where possible.
+```
+# ✅ Small and secure base image
+FROM alpine:3.20
+```
+
+3. Scan Images for Vulnerabilities Before Deployment
+Use tools like:
+- Trivy: https://github.com/aquasecurity/trivy
+- Dockle: https://github.com/goodwithtech/dockle
+4. Sign and Verify Docker Images
+
+Use Docker Content Trust (DCT) or [Cosign](https://github.com/sigstore/cosign) to ensure integrity.
+
+5. Avoid Leaking Secrets in Docker Images
+
+- Never COPY .env or .aws files into your image.
+
+- Use --build-arg, dynamic injection, or Vault.
+```
+# ❌ Bad
+COPY .env /app/.env
+
+# ✅ Better
+ARG API_KEY
+ENV API_KEY=$API_KEY
+```
+6. Use Docker Networks + Firewalls Wisely
+
+- Don’t expose ports to the world. Use internal-only networks for inter-container comms.
+- Avoid publishing 0.0.0.0:xxxx unless absolutely necessary.
+
+```
+# ✅ Limit to localhost
+-p 127.0.0.1:8080:80
+```
+
+7. Monitor and Limit Container Resource Usage
+- Prevent runaway containers with limits:
+```
+docker run --memory=256m --cpus=0.5 myapp
+```
+8. Keep Docker & Host Up-To-Date
+- Always patch vulnerabilities on the Docker daemon and the host OS.
+- Consider distros like Bottlerocket or Flatcar designed for containers.
+
+9. Runtime Security with eBPF + Sandboxing
+- eBPF-based monitoring: Tools like [Cilium Tetragon](https://github.com/cilium/tetragon) detect suspicious syscalls and behavior.
+- Use gVisor or Kata Containers: Sandbox containers with hardened kernels.
+
+
+### 5. Secure Your CI/CD Pipelines: Attackers Love Automated Trust
+
+**Why It Matters**:
+Your CI/CD pipeline has the keys to the kingdom: access to source code, secrets, cloud credentials, and deployment mechanisms. If compromised, it becomes the perfect platform to inject malware into every release.
+
+Major CI/CD Security Breaches
+
+- [SolarWinds Orion (2020)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Nation-state attackers inserted a backdoor into the Orion build pipeline, impacting 18,000+ customers.
+- [Codecov (2021)](https://about.codecov.io/security-update/) – Attackers tampered with the Bash uploader in CI environments, stealing secrets from thousands of environments.
+- [CircleCI (2023)](https://circleci.com/blog/january-4-2023-security-alert/) – Compromise of internal systems led to the theft of environment variables, secrets, and keys from customer pipelines.
+- [Travis CI (2022)](https://www.trendmicro.com/en_us/research/22/j/travis-ci-exposed-secrets-in-public-logs.html) – Leaked secrets in build logs exposed thousands of credentials from public CI jobs.
+- [PHP Git Server (2021)](https://www.bleepingcomputer.com/news/security/php-official-git-repository-hacked-code-backdoored/) – CI pipeline was hijacked to insert malicious code into the official PHP source repository.
+- [SolarMarker via Jenkins (2022)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Threat actors exploited Jenkins pipelines to propagate SolarMarker malware through compromised software builds.
+- [Codecov-like Bash Uploader Imitation (2021)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Malicious clones of popular CI/CD tools distributed malware in CI environments.
+
+
+Best Practices:
+- **Use ephemeral environments**: Rebuild containers and runners on every job.
+- **Restrict secrets exposure**: Never expose all secrets to every job; use secret-scoping (e.g., GitHub Actions' env, GitLab CI's protected: true).
+- **Require commit signature**: Verification before running deploy jobs.
+- **Use OpenID Connect (OIDC)**: to grant temporary cloud permissions via short-lived tokens (instead of long-lived API keys).
+- **Audit your pipeline dependencies**: Install only trusted tools and lock versions.
+- **Pipeline Isolation & Segmentation**: eparate pipelines by environment: Use different pipelines/runners for dev, staging, and production with appropriate privilege levels.
+
+
+
 ### 4. Verify Website URLs Carefully Before Downloading Anything
 
 ![alt text](image-7.png)
@@ -186,96 +297,75 @@ curl https://suspicious-site.com/nodejs.tar.gz
 
 
 
-5. Handling attachments, files safely
+### 5. Weaponized PDFs & File Traps: Don't Get Baited
+![alt text](image-9.png)
 
-Spreading mailwares via files in Telegram
+Cybercriminals love when you open random files, especially PDFs via Telegram, email, or Discord. From Radiant to Ronin, multimillion-dollar exploits began with a single careless click.
 
 Be extra cautious when handling PDF files received via email or Telegram. Recently, there have been multiple crypto-related security breaches, such as the Radiant hack (2024) $50m and the Ronin Bridge hack (2022) $615m, caused by employees unknowingly spreading malware embedded in PDF documents.
 To minimize risk, please follow these guidelines when handling PDFs:
 
-Do NOT download and open PDFs directly – Instead, if you receive an email with pdf attachements. open them in your browser using services like Google Drive or other secure preview options. DO NOT download the files into your machine.
+- **Do NOT download and open PDFs directly** – Instead, if you receive an email with pdf attachements. open them in your browser using services like Google Drive or other secure preview options. **DO NOT** download the files into your machine.
 
-Be wary of unexpected attachments – If you receive a PDF file from an unknown or unexpected sender, verify its legitimacy before opening.
+- **Be wary of unexpected attachments** – If you receive a PDF file from an unknown or unexpected sender, verify its legitimacy before opening.
 
-Never enable macros or scripts – Some PDFs may prompt you to enable features that could execute malicious code. Avoid doing this at all costs.
+- **Never enable macros or scripts** – Some PDFs may prompt you to enable features that could execute malicious code. Avoid doing this at all costs.
 
-Report suspicious files – If you receive a suspicious or unexpected PDF, report it to [IT/Security Team Contact] before interacting with it.
+- **Report suspicious files** – If you receive a suspicious or unexpected PDF, report it to [IT/Security Team Contact] before interacting with it.
 
 Use application sandboxing https://www.techtarget.com/searchmobilecomputing/definition/application-sandboxing if you want to open a PDF file from your computer
 
-Windows: Windows Sandbox (Built-in, lightweight, and highly secure)
+**Windows**: Windows Sandbox (Built-in, lightweight, and highly secure)
 
-Linux: Firejail (Easy-to-use, widely supported, and effective application isolation)
+**Linux**: Firejail (Easy-to-use, widely supported, and effective application isolation)
 
-macOS: App Sandbox (Apple's built-in sandboxing mechanism for macOS apps)
+**MacOS**: App Sandbox (Apple's built-in sandboxing mechanism for macOS apps)
 
-macOS app sandbox
+![alt text](image-8.png)
+![alt text](image-10.png)
 
-6. Enforce Strong Password Practices & Secure Credential Management
+### 6. Enforce Strong Password Practices & Secure Credential Management
 
 Ensuring strong password hygiene is critical to protecting developer accounts, repositories, and infrastructure from unauthorized access. Weak or reused passwords are a major attack vector, leading to account takeovers and data breaches.
+![alt text](image-11.png)
 
-Best Practices for Strong Password Security
+#### Best Practices for Strong Password Security
 
-🔹 Use a Password Manager
-
-Developers should never store passwords in plaintext (e.g., in notes, spreadsheets, or browser autofill).
-
-Use a trusted password manager such as Bitwarden, 1Password, LastPass, or KeePassXC to securely generate, store, and autofill passwords.
-
-Enable 2FA for the password manager itself to prevent unauthorized access.
-
-🔹 Use Strong, Unique Passwords for Each Service
-
-Each account should have a unique password—never reuse passw✅ Password managers (1Password, Bitwarden, LastPass, etc.)ords across services.
-
-Generate randomized, long passwords (at least 16-24 characters with uppercase, lowercase, numbers, and special characters).
+- Use a Password Manager
+  - Developers should never store passwords in plaintext (e.g., in notes, spreadsheets, or browser autofill).
+  - Use a trusted password manager such as Bitwarden, 1Password, LastPass, or KeePassXC to securely generate, store, and autofill passwords.
+  - Enable 2FA for the password manager itself to prevent unauthorized access.
+- Use Strong, Unique Passwords for Each Service
+- Generate randomized, long passwords (at least 16-24 characters with uppercase, lowercase, numbers, and special characters).
 
 Example of a secure password:
 
+```
 G3#Tz@!p8X7sM$Qy
+```
 
-Avoid using dictionary words or personal details in passwords.
+- Avoid using dictionary words or personal details in passwords.
+- Rotate Passwords for Critical Applications Regularly
+- Critical applications include:
+  - GitHub, X, Linkedln, Google Account, crypto wallets, database credentials, cloud infrastructure, any financial, payment, or administrative accounts
+- Rotate passwords every 3-6 months or immediately if a security incident is suspected.
+- Use password change policies for high-privilege accounts.
+- Enable Two-Factor Authentication (2FA) on All Apps
+  - MFA is non-negotiable for all developer-related accounts.
+  - Prefer hardware security keys (e.g., YubiKey, NitroKey) over SMS or authenticator apps.
 
-🔹 Rotate Passwords for Critical Applications Regularly
+- Use Passkeys Where Possible
+  - Passkeys (WebAuthn) are a more secure alternative to passwords.
+  - Supported by Google, Apple, GitHub, and Microsoft for passwordless authentication.
+  - Prevents phishing attacks by eliminating password-based logins.
 
-Critical applications include:
-
-GitHub, X, Linkedln, Google Account, crypto wallets, database credentials, cloud infrastructure
-
-Any financial, payment, or administrative accounts
-
-Rotate passwords every 3-6 months or immediately if a security incident is suspected.
-
-Use password change policies for high-privilege accounts.
-
-🔹 Enable Two-Factor Authentication (2FA) on All Apps
-
-MFA is non-negotiable for all developer-related accounts.
-
-Prefer hardware security keys (e.g., YubiKey, NitroKey) over SMS or authenticator apps.
-
-If using software-based MFA, Google Authenticator, Authy, or 1Password's built-in authenticator are preferred.
-
-Mandatory 2FA for:
-
-GitHub, Webflow, AWS, Telegram, Whatsapp, Google Suite
-
-🔹 Use Passkeys Where Possible
-
-Passkeys (WebAuthn) are a more secure alternative to passwords.
-
-Supported by Google, Apple, GitHub, and Microsoft for passwordless authentication.
-
-Prevents phishing attacks by eliminating password-based logins.
-
-7. No sharing of sensitive Credentials & Secrets with anyone - including co workers
+### 7. Secrets Aren’t for Sharing, Not Even with Your Team
 
 Never share private keys, API secrets, or credentials with anyone—including coworkers.
 
 Do Not Share Credentials: Even within the team, no one should directly share API keys, private keys, or passwords. If access is required, use role-based access controls (RBAC) and secure secret management tools.
 
-Rotate Credentials Regularly: Even if a secret is believed to be safe, implement automated credential rotation policies to reduce exposure risk.
+Rotate Credentials Regularly: Even if a secret is cobelieved to be safe, implement automated credential rotation policies to reduce exposure risk.
 
 Compromised Secrets Lead to Untraceable Security Breaches
 
@@ -283,7 +373,7 @@ If credentials are leaked or shared, a hack can occur without a clear root cause
 
 Attackers could move laterally within the system, increasing the difficulty of identifying the entry point of the attack.
 
-8. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault
+### 8. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault
 
 🚨 Why .env Files Are a Security Risk
 
@@ -315,17 +405,18 @@ Follow the official installation guide: HashiCorp Vault Docs.
 Use vault exec for Secure Secret Injection
 Instead of storing secrets in .env files, inject them dynamically when running commands:
 
+```
 vault exec -wrap-env my_command
-
+```
 Example: Injecting Database Credentials Securely
-
+```
 vault exec --env DB_USERNAME --env DB_PASSWORD my_command
-
+```
 Vault fetches the secrets securely and injects them as environment variables when executing my_command.
 
 Secrets are never stored in local files or exposed in shell history.
 
-9. VPN connection is required to access critical resource
+### 9. VPN connection is required to access critical resource
    2FA on VPN Access
 
 To strengthen security, VPN authentication must require Two-Factor Authentication (2FA) using one of the following:
@@ -343,17 +434,18 @@ All employees and contractors must enable 2FA on:
 Extra resources:
 https://github.com/ukncsc/secure-development-and-deployment
 
-10. Secure Firewall Policy for Developer Desktops
+### 10. Secure Firewall Policy for Developer Desktops
 
 A firewall is a critical security measure for developer desktops, ensuring that unauthorized network traffic—both incoming and outgoing—is properly controlled. Developers often work with sensitive credentials, APIs, and infrastructure that, if exposed, could lead to security breaches.
 
 Key reasons to enforce a strict firewall policy:
 
-Block unauthorized outbound traffic – Prevents malware or misconfigured applications from leaking sensitive data.
+Block unauthorized outbound traffic 
 
-Restrict inbound access – Ensures only necessary services (e.g., SSH) are accessible.
-
-Mitigate attack risks – Reduces exposure to threats like port scanning and unauthorized access.
+- Prevents malware or misconfigured applications from leaking sensitive data.
+Restrict inbound access
+- Ensures only necessary services (e.g., SSH) are accessible. Mitigate attack risks
+- Reduces exposure to threats like port scanning and unauthorized access.
 
 Best Practices for Firewall Rules
 
@@ -368,3 +460,20 @@ Suggested tools to setup firewall: UFW, OpenSnitch
 https://ostechnix.com/opensnitch-application-level-firewall-for-linux/
 
 https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu
+
+
+
+### 12. Monitor for Compromised Developer Devices
+
+Even if your backend is locked down, all it takes is one developer's infected laptop to sink the ship — especially if their Git credentials or VPN access isn’t tightly secured.
+
+Suggestions:
+- Use **Endpoint Detection & Response (EDR) tools** like CrowdStrike, SentinelOne, or open-source tools like Wazuh.
+- **Disable automatic token caching** in CLI tools like GitHub CLI, AWS CLI.
+- **Limit SSH agent forwarding**, especially on jump boxes and bastion hosts.
+- **Restrict privileged developer laptops from using public Wi-Fi** or enforce VPN-only policies.
+
+### 13. Implement Just-In-Time (JIT) Privileges
+Developers often have standing access to sensitive infrastructure — production databases, cloud consoles, CI/CD secrets — even if they only need it occasionally. This always-on access increases the blast radius if their account or machine is compromised.
+
+JIT access ensures elevated permissions are granted temporarily, on-demand, with approval, and revoked automatically after use — reducing the attack surface dramatically.
