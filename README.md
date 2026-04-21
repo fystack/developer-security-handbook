@@ -8,32 +8,38 @@
 > *"Hackers don’t break in — they walk through the door you left open."* 
 
 - [Security handbook for developers](#security-handbook-for-developers)
-  - [1. SSH Keys: Hackers' Easiest Target \& Prime Hotspots](#1-ssh-keys-hackers-easiest-target--prime-hotspots)
-  - [2. Don't Let Hackers Impersonate You, Lock Down Commits with GPG](#2-dont-let-hackers-impersonate-you-lock-down-commits-with-gpg)
-  - [3. No Blind Installs: Treat Each Package Like a Potential Trojan](#3-no-blind-installs-treat-each-package-like-a-potential-trojan)
-      - [Real-World Supply-Chain Ambushes](#real-world-supply-chain-ambushes)
-      - [Common Attack Patterns](#common-attack-patterns)
-  - [4. 🐳 Don't Let Docker Be Your Trojan Horse: Lock Down Your Containers](#4--dont-let-docker-be-your-trojan-horse-lock-down-your-containers)
-    - [Best Practices for Secure Docker Usage](#best-practices-for-secure-docker-usage)
-  - [5. Secure Your CI/CD Pipelines: Attackers Love Automated Trust](#5-secure-your-cicd-pipelines-attackers-love-automated-trust)
-  - [6. Verify Website URLs Carefully Before Downloading Anything](#6-verify-website-urls-carefully-before-downloading-anything)
-  - [7. Weaponized PDFs \& File Traps: Don't Get Baited](#7-weaponized-pdfs--file-traps-dont-get-baited)
-  - [8. Enforce Strong Password Practices \& Secure Credential Management](#8-enforce-strong-password-practices--secure-credential-management)
-      - [Best Practices for Strong Password Security](#best-practices-for-strong-password-security)
-  - [9. Secrets Aren’t for Sharing, Not Even with Your Team](#9-secrets-arent-for-sharing-not-even-with-your-team)
-  - [10. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault](#10-dont-store-secrets-for-development-in-env-files--use-a-secure-secret-vault)
-  - [11. VPN connection is required to access critical resource](#11-vpn-connection-is-required-to-access-critical-resource)
-  - [12. Secure Firewall Policy for Developer Desktops](#12-secure-firewall-policy-for-developer-desktops)
-  - [13. Monitor for Compromised Developer Devices](#13-monitor-for-compromised-developer-devices)
-  - [14. Implement Just-In-Time (JIT) Privileges](#14-implement-just-in-time-jit-privileges)
-  - [15. Secure Coding: Write Code That Resists Attacks](#15-secure-coding-write-code-that-resists-attacks)
-  - [16. Security Logging \& Alerting: Detecting Threats Before They Strike](#16-security-logging--alerting-detecting-threats-before-they-strike)
-  - [17. Security Testing: Shift Left and Catch Issues Early](#17-security-testing-shift-left-and-catch-issues-early)
-  - [18. Incident Response: Be Prepared for the Worst](#18-incident-response-be-prepared-for-the-worst)
-  - [19. Cloud Security: Shared Responsibility Model](#19-cloud-security-shared-responsibility-model)
+  - [Part I — Developer Identity \& Workstation](#part-i--developer-identity--workstation)
+    - [1. SSH Keys: Hackers' Easiest Target \& Prime Hotspots](#1-ssh-keys-hackers-easiest-target--prime-hotspots)
+      - [🔐 Maximum Security: Store Your SSH Key on a YubiKey (FIDO2)](#-maximum-security-store-your-ssh-key-on-a-yubikey-fido2)
+    - [2. Don't Let Hackers Impersonate You, Lock Down Commits with GPG](#2-dont-let-hackers-impersonate-you-lock-down-commits-with-gpg)
+    - [3. Enforce Strong Password Practices \& Secure Credential Management](#3-enforce-strong-password-practices--secure-credential-management)
+    - [4. Secrets Aren’t for Sharing, Not Even with Your Team](#4-secrets-arent-for-sharing-not-even-with-your-team)
+    - [5. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault](#5-dont-store-secrets-for-development-in-env-files--use-a-secure-secret-vault)
+    - [6. Secure Firewall Policy for Developer Desktops](#6-secure-firewall-policy-for-developer-desktops)
+    - [7. Monitor for Compromised Developer Devices](#7-monitor-for-compromised-developer-devices)
+  - [Part II — Supply Chain \& Dependencies](#part-ii--supply-chain--dependencies)
+    - [8. No Blind Installs: Treat Each Package Like a Potential Trojan](#8-no-blind-installs-treat-each-package-like-a-potential-trojan)
+    - [9. 🐳 Don't Let Docker Be Your Trojan Horse: Lock Down Your Containers](#9--dont-let-docker-be-your-trojan-horse-lock-down-your-containers)
+    - [10. Verify Website URLs Carefully Before Downloading Anything](#10-verify-website-urls-carefully-before-downloading-anything)
+    - [11. Weaponized PDFs \& File Traps: Don't Get Baited](#11-weaponized-pdfs--file-traps-dont-get-baited)
+  - [Part III — DevSecOps \& Shift-Left](#part-iii--devsecops--shift-left)
+    - [12. Secure Your CI/CD Pipelines: Attackers Love Automated Trust](#12-secure-your-cicd-pipelines-attackers-love-automated-trust)
+    - [13. Secure Coding: Write Code That Resists Attacks](#13-secure-coding-write-code-that-resists-attacks)
+    - [14. Security Testing: Shift Left and Catch Issues Early](#14-security-testing-shift-left-and-catch-issues-early)
+  - [Part IV — Access \& Infrastructure](#part-iv--access--infrastructure)
+    - [15. VPN connection is required to access critical resource](#15-vpn-connection-is-required-to-access-critical-resource)
+    - [16. Implement Just-In-Time (JIT) Privileges](#16-implement-just-in-time-jit-privileges)
+    - [17. Cloud Security: Shared Responsibility Model](#17-cloud-security-shared-responsibility-model)
+  - [Part V — Detect \& Respond](#part-v--detect--respond)
+    - [18. Security Logging \& Alerting: Detecting Threats Before They Strike](#18-security-logging--alerting-detecting-threats-before-they-strike)
+    - [19. Incident Response: Be Prepared for the Worst](#19-incident-response-be-prepared-for-the-worst)
 
 
-## 1. SSH Keys: Hackers' Easiest Target & Prime Hotspots
+## Part I — Developer Identity & Workstation
+
+*Threats that start at the endpoint: your laptop, your keys, your credentials. If an attacker owns the developer, the rest of the defenses barely matter.*
+
+### 1. SSH Keys: Hackers' Easiest Target & Prime Hotspots
 Let's be honest—every developer, at least once, has raced through ssh-keygen in a caffeine-fueled haze, hammered Enter three times to skip the passphrase, and thought, "I'll add it later… maybe." 🤷‍♂️ But guess what? That heroic shortcut is like leaving your car unlocked with the keys in the ignition and a "Please Steal Me" bumper sticker.
 
 If some sneaky hacker nabs your unencrypted private SSH key, they don't need to knock—they walk right in. They can masquerade as you on your servers or GitHub, push malicious code, raid private repos, and throw a root-level rave in your infrastructure. Trust me, that's a party you don't want an uninvited guest at.
@@ -58,7 +64,7 @@ It adds an extra layer of security, making it much harder for attackers to explo
 
 For security best practices, developers should rotate their SSH keys every month to minimize the risk of compromise. Regular key rotation helps prevent unauthorized access in case a key is exposed or compromised.
 
-### 🔐 Maximum Security: Store Your SSH Key on a YubiKey (FIDO2)
+#### 🔐 Maximum Security: Store Your SSH Key on a YubiKey (FIDO2)
 
 ![alt text](github_yubikey.webp)
 
@@ -92,7 +98,7 @@ The `IdentitiesOnly=yes` flag prevents SSH from leaking other identities to the 
 
 Full walkthrough: [YubiKey + SSH + Git: Super-Secure Your Development Workflow](https://medium.com/@harrishcluo/yubikey-ssh-git-super-secure-your-development-workflow-2-2-1899379fb882)
 
-## 2. Don't Let Hackers Impersonate You, Lock Down Commits with GPG
+### 2. Don't Let Hackers Impersonate You, Lock Down Commits with GPG
 Why would a hacker forge your commits? How do they pull it off?
 - **Sneak in malicious code**: By masquerading as a trusted contributor, they slip dangerous payloads into your codebase.
 - **Corrupt your audit trail**: Fake author metadata clouds the "blame" history, making investigations a nightmare.
@@ -120,7 +126,143 @@ When generating GPG key, should generate with an expiration. Recommendation is 3
 Adding GPG key in Github Account Setting
 ![alt text](image-3.png)
 
-## 3. No Blind Installs: Treat Each Package Like a Potential Trojan
+### 3. Enforce Strong Password Practices & Secure Credential Management
+
+Ensuring strong password hygiene is critical to protecting developer accounts, repositories, and infrastructure from unauthorized access. Weak or reused passwords are a major attack vector, leading to account takeovers and data breaches.
+![alt text](image-11.png)
+
+#### Best Practices for Strong Password Security
+
+- Use a Password Manager
+  - Developers should never store passwords in plaintext (e.g., in notes, spreadsheets, or browser autofill).
+  - Use a trusted password manager such as Bitwarden, 1Password, LastPass, or KeePassXC to securely generate, store, and autofill passwords.
+  - Enable 2FA for the password manager itself to prevent unauthorized access.
+- Use Strong, Unique Passwords for Each Service
+- Generate randomized, long passwords (at least 16-24 characters with uppercase, lowercase, numbers, and special characters).
+
+Example of a secure password:
+
+```
+G3#Tz@!p8X7sM$Qy
+```
+
+- Avoid using dictionary words or personal details in passwords.
+- Rotate Passwords for Critical Applications Regularly
+- Critical applications include:
+  - GitHub, X, Linkedln, Google Account, crypto wallets, database credentials, cloud infrastructure, any financial, payment, or administrative accounts
+- Rotate passwords every 3-6 months or immediately if a security incident is suspected.
+- Use password change policies for high-privilege accounts.
+- Enable Two-Factor Authentication (2FA) on All Apps
+  - MFA is non-negotiable for all developer-related accounts.
+  - Prefer hardware security keys (e.g., YubiKey, NitroKey) over SMS or authenticator apps.
+
+- Use Passkeys Where Possible
+  - Passkeys (WebAuthn) are a more secure alternative to passwords.
+  - Supported by Google, Apple, GitHub, and Microsoft for passwordless authentication.
+  - Prevents phishing attacks by eliminating password-based logins.
+
+### 4. Secrets Aren’t for Sharing, Not Even with Your Team
+
+Never share private keys, API secrets, or credentials with anyone—including coworkers.
+
+Do Not Share Credentials: Even within the team, no one should directly share API keys, private keys, or passwords. If access is required, use role-based access controls (RBAC) and secure secret management tools.
+
+Rotate Credentials Regularly: Even if a secret is cobelieved to be safe, implement automated credential rotation policies to reduce exposure risk.
+
+Compromised Secrets Lead to Untraceable Security Breaches
+
+If credentials are leaked or shared, a hack can occur without a clear root cause, making it harder to track which component was infected.
+
+Attackers could move laterally within the system, increasing the difficulty of identifying the entry point of the attack.
+
+### 5. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault
+
+🚨 Why .env Files Are a Security Risk
+
+.env files can be accidentally committed to Git, exposing secrets in repositories.
+
+Attackers with access to a developer's machine can extract credentials from .env files.
+
+.env files lack access controls, making it impossible to enforce least privilege access.
+
+Secrets in .env files are not automatically rotated, increasing the risk of long-term exposure.
+
+✅ Use a Secure Secret Vault Instead
+
+Recommended Alternative: HashiCorp Vault
+
+Secrets are encrypted on the disk level
+
+Provides dynamic secret injection without storing credentials in local files.
+
+Supports RBAC (Role-Based Access Control) for secure access management.
+
+Allows automatic secret rotation, reducing risk from exposed credentials.
+
+🔧 How to Use HashiCorp Vault Securely
+
+Install HashiCorp Vault
+Follow the official installation guide: HashiCorp Vault Docs.
+
+Use vault exec for Secure Secret Injection
+Instead of storing secrets in .env files, inject them dynamically when running commands:
+
+```
+vault exec -wrap-env my_command
+```
+Example: Injecting Database Credentials Securely
+```
+vault exec --env DB_USERNAME --env DB_PASSWORD my_command
+```
+Vault fetches the secrets securely and injects them as environment variables when executing my_command.
+
+Secrets are never stored in local files or exposed in shell history.
+
+### 6. Secure Firewall Policy for Developer Desktops
+
+A firewall is a critical security measure for developer desktops, ensuring that unauthorized network traffic—both incoming and outgoing—is properly controlled. Developers often work with sensitive credentials, APIs, and infrastructure that, if exposed, could lead to security breaches.
+
+Key reasons to enforce a strict firewall policy:
+
+Block unauthorized outbound traffic 
+
+- Prevents malware or misconfigured applications from leaking sensitive data.
+Restrict inbound access
+- Ensures only necessary services (e.g., SSH) are accessible. Mitigate attack risks
+- Reduces exposure to threats like port scanning and unauthorized access.
+
+Best Practices for Firewall Rules
+
+- Least Privilege: Allow only necessary services.
+- Deny by Default: Block all and allow only required traffic.
+- Logging & Monitoring: Enable logging for audit trails.
+- Regular Review: Periodically check rules for outdated permissions.
+- Use IP Whitelisting: Restrict access to trusted IPs.
+
+Suggested tools to setup firewall: UFW, OpenSnitch
+
+https://ostechnix.com/opensnitch-application-level-firewall-for-linux/
+
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu
+
+
+
+### 7. Monitor for Compromised Developer Devices
+
+Even if your backend is locked down, all it takes is one developer's infected laptop to sink the ship — especially if their Git credentials or VPN access isn’t tightly secured.
+
+Suggestions:
+- Use **Endpoint Detection & Response (EDR) tools** like CrowdStrike, SentinelOne, or open-source tools like Wazuh.
+- **Disable automatic token caching** in CLI tools like GitHub CLI, AWS CLI.
+- **Limit SSH agent forwarding**, especially on jump boxes and bastion hosts.
+- **Restrict privileged developer laptops from using public Wi-Fi** or enforce VPN-only policies.
+
+
+## Part II — Supply Chain & Dependencies
+
+*Everything that enters your machine from the outside world: packages, images, downloads, attachments. The inbound trust boundary is where modern attacks land first.*
+
+### 8. No Blind Installs: Treat Each Package Like a Potential Trojan
 ![alt text](image-5.png)
 The open-source package ecosystems: npm, PyPI, Go modules and beyond are prime real-estate for supply-chain attacks. One malicious dependency can turn your entire codebase into a backdoor. Before running any install command, treat each package as if it were a Trojan waiting to strike.
 
@@ -166,7 +308,7 @@ The open-source package ecosystems: npm, PyPI, Go modules and beyond are prime r
 
 
 
-## 4. 🐳 Don't Let Docker Be Your Trojan Horse: Lock Down Your Containers
+### 9. 🐳 Don't Let Docker Be Your Trojan Horse: Lock Down Your Containers
 Containers are like magic boxes: lightweight, portable, and fast. But guess what? If you treat them like black boxes and skip security, they’ll behave like Pandora’s Box—spilling vulnerabilities into your entire infrastructure.
 
 > A container isn't a sandbox unless you make it one.
@@ -185,7 +327,7 @@ Containers are like magic boxes: lightweight, portable, and fast. But guess what
 
 - **[Dero Miner Targeting Docker (2025)](https://www.techradar.com/pro/security/misconfigured-docker-instances-are-being-hacked-to-mine-cryptocurrency)** – A cryptomining worm exploited misconfigured Docker daemons to mine the Dero privacy coin.
 
-### Best Practices for Secure Docker Usage
+#### Best Practices for Secure Docker Usage
 
 1. Never Run Containers as Root
 - Add a USER directive in your Dockerfile to drop privileges.
@@ -251,33 +393,7 @@ docker run --memory=256m --cpus=0.5 myapp
 - Use gVisor or Kata Containers: Sandbox containers with hardened kernels.
 
 
-## 5. Secure Your CI/CD Pipelines: Attackers Love Automated Trust
-
-**Why It Matters**:
-Your CI/CD pipeline has the keys to the kingdom: access to source code, secrets, cloud credentials, and deployment mechanisms. If compromised, it becomes the perfect platform to inject malware into every release.
-
-Major CI/CD Security Breaches
-
-- [SolarWinds Orion (2020)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Nation-state attackers inserted a backdoor into the Orion build pipeline, impacting 18,000+ customers.
-- [Codecov (2021)](https://about.codecov.io/security-update/) – Attackers tampered with the Bash uploader in CI environments, stealing secrets from thousands of environments.
-- [CircleCI (2023)](https://circleci.com/blog/january-4-2023-security-alert/) – Compromise of internal systems led to the theft of environment variables, secrets, and keys from customer pipelines.
-- [Travis CI (2022)](https://www.trendmicro.com/en_us/research/22/j/travis-ci-exposed-secrets-in-public-logs.html) – Leaked secrets in build logs exposed thousands of credentials from public CI jobs.
-- [PHP Git Server (2021)](https://www.bleepingcomputer.com/news/security/php-official-git-repository-hacked-code-backdoored/) – CI pipeline was hijacked to insert malicious code into the official PHP source repository.
-- [SolarMarker via Jenkins (2022)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Threat actors exploited Jenkins pipelines to propagate SolarMarker malware through compromised software builds.
-- [Codecov-like Bash Uploader Imitation (2021)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Malicious clones of popular CI/CD tools distributed malware in CI environments.
-
-
-Best Practices:
-- **Use ephemeral environments**: Rebuild containers and runners on every job.
-- **Restrict secrets exposure**: Never expose all secrets to every job; use secret-scoping (e.g., GitHub Actions' env, GitLab CI's protected: true).
-- **Require commit signature**: Verification before running deploy jobs.
-- **Use OpenID Connect (OIDC)**: to grant temporary cloud permissions via short-lived tokens (instead of long-lived API keys).
-- **Audit your pipeline dependencies**: Install only trusted tools and lock versions.
-- **Pipeline Isolation & Segmentation**: eparate pipelines by environment: Use different pipelines/runners for dev, staging, and production with appropriate privilege levels.
-
-
-
-## 6. Verify Website URLs Carefully Before Downloading Anything
+### 10. Verify Website URLs Carefully Before Downloading Anything
 
 ![alt text](image-7.png)
 
@@ -361,7 +477,7 @@ Quick Security Checklist Before Any Download
 
 
 
-## 7. Weaponized PDFs & File Traps: Don't Get Baited
+### 11. Weaponized PDFs & File Traps: Don't Get Baited
 ![alt text](image-9.png)
 
 Cybercriminals love when you open random files, especially PDFs via Telegram, email, or Discord. From Radiant to Ronin, multimillion-dollar exploits began with a single careless click.
@@ -388,179 +504,37 @@ Use application sandboxing https://www.techtarget.com/searchmobilecomputing/defi
 ![alt text](image-8.png)
 ![alt text](image-10.png)
 
-## 8. Enforce Strong Password Practices & Secure Credential Management
 
-Ensuring strong password hygiene is critical to protecting developer accounts, repositories, and infrastructure from unauthorized access. Weak or reused passwords are a major attack vector, leading to account takeovers and data breaches.
-![alt text](image-11.png)
+## Part III — DevSecOps & Shift-Left
 
-#### Best Practices for Strong Password Security
+*Security baked into the build pipeline and the code itself. Find bugs before attackers do, and stop trusting your CI with more than it needs.*
 
-- Use a Password Manager
-  - Developers should never store passwords in plaintext (e.g., in notes, spreadsheets, or browser autofill).
-  - Use a trusted password manager such as Bitwarden, 1Password, LastPass, or KeePassXC to securely generate, store, and autofill passwords.
-  - Enable 2FA for the password manager itself to prevent unauthorized access.
-- Use Strong, Unique Passwords for Each Service
-- Generate randomized, long passwords (at least 16-24 characters with uppercase, lowercase, numbers, and special characters).
+### 12. Secure Your CI/CD Pipelines: Attackers Love Automated Trust
 
-Example of a secure password:
+**Why It Matters**:
+Your CI/CD pipeline has the keys to the kingdom: access to source code, secrets, cloud credentials, and deployment mechanisms. If compromised, it becomes the perfect platform to inject malware into every release.
 
-```
-G3#Tz@!p8X7sM$Qy
-```
+Major CI/CD Security Breaches
 
-- Avoid using dictionary words or personal details in passwords.
-- Rotate Passwords for Critical Applications Regularly
-- Critical applications include:
-  - GitHub, X, Linkedln, Google Account, crypto wallets, database credentials, cloud infrastructure, any financial, payment, or administrative accounts
-- Rotate passwords every 3-6 months or immediately if a security incident is suspected.
-- Use password change policies for high-privilege accounts.
-- Enable Two-Factor Authentication (2FA) on All Apps
-  - MFA is non-negotiable for all developer-related accounts.
-  - Prefer hardware security keys (e.g., YubiKey, NitroKey) over SMS or authenticator apps.
-
-- Use Passkeys Where Possible
-  - Passkeys (WebAuthn) are a more secure alternative to passwords.
-  - Supported by Google, Apple, GitHub, and Microsoft for passwordless authentication.
-  - Prevents phishing attacks by eliminating password-based logins.
-
-## 9. Secrets Aren’t for Sharing, Not Even with Your Team
-
-Never share private keys, API secrets, or credentials with anyone—including coworkers.
-
-Do Not Share Credentials: Even within the team, no one should directly share API keys, private keys, or passwords. If access is required, use role-based access controls (RBAC) and secure secret management tools.
-
-Rotate Credentials Regularly: Even if a secret is cobelieved to be safe, implement automated credential rotation policies to reduce exposure risk.
-
-Compromised Secrets Lead to Untraceable Security Breaches
-
-If credentials are leaked or shared, a hack can occur without a clear root cause, making it harder to track which component was infected.
-
-Attackers could move laterally within the system, increasing the difficulty of identifying the entry point of the attack.
-
-## 10. Don't Store Secrets for Development in .env Files – Use a Secure Secret Vault
-
-🚨 Why .env Files Are a Security Risk
-
-.env files can be accidentally committed to Git, exposing secrets in repositories.
-
-Attackers with access to a developer's machine can extract credentials from .env files.
-
-.env files lack access controls, making it impossible to enforce least privilege access.
-
-Secrets in .env files are not automatically rotated, increasing the risk of long-term exposure.
-
-✅ Use a Secure Secret Vault Instead
-
-Recommended Alternative: HashiCorp Vault
-
-Secrets are encrypted on the disk level
-
-Provides dynamic secret injection without storing credentials in local files.
-
-Supports RBAC (Role-Based Access Control) for secure access management.
-
-Allows automatic secret rotation, reducing risk from exposed credentials.
-
-🔧 How to Use HashiCorp Vault Securely
-
-Install HashiCorp Vault
-Follow the official installation guide: HashiCorp Vault Docs.
-
-Use vault exec for Secure Secret Injection
-Instead of storing secrets in .env files, inject them dynamically when running commands:
-
-```
-vault exec -wrap-env my_command
-```
-Example: Injecting Database Credentials Securely
-```
-vault exec --env DB_USERNAME --env DB_PASSWORD my_command
-```
-Vault fetches the secrets securely and injects them as environment variables when executing my_command.
-
-Secrets are never stored in local files or exposed in shell history.
-
-## 11. VPN connection is required to access critical resource
-   2FA on VPN Access
-
-To strengthen security, VPN authentication must require Two-Factor Authentication (2FA) using one of the following:
-OTP-based authentication (Google Authenticator, Authy, 1Password)
-
-VPN Providers That Support 2FA
-
-🔒 2FA is Mandatory for Critical Services
-
-All employees and contractors must enable 2FA on:
-✅ Cloud accounts (AWS.)
-✅ Code repositories (GitHub, require Enterprise plan need to consider)
-✅ Internal dashboards & admin panels
-
-Extra resources:
-https://github.com/ukncsc/secure-development-and-deployment
-
-## 12. Secure Firewall Policy for Developer Desktops
-
-A firewall is a critical security measure for developer desktops, ensuring that unauthorized network traffic—both incoming and outgoing—is properly controlled. Developers often work with sensitive credentials, APIs, and infrastructure that, if exposed, could lead to security breaches.
-
-Key reasons to enforce a strict firewall policy:
-
-Block unauthorized outbound traffic 
-
-- Prevents malware or misconfigured applications from leaking sensitive data.
-Restrict inbound access
-- Ensures only necessary services (e.g., SSH) are accessible. Mitigate attack risks
-- Reduces exposure to threats like port scanning and unauthorized access.
-
-Best Practices for Firewall Rules
-
-- Least Privilege: Allow only necessary services.
-- Deny by Default: Block all and allow only required traffic.
-- Logging & Monitoring: Enable logging for audit trails.
-- Regular Review: Periodically check rules for outdated permissions.
-- Use IP Whitelisting: Restrict access to trusted IPs.
-
-Suggested tools to setup firewall: UFW, OpenSnitch
-
-https://ostechnix.com/opensnitch-application-level-firewall-for-linux/
-
-https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu
+- [SolarWinds Orion (2020)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Nation-state attackers inserted a backdoor into the Orion build pipeline, impacting 18,000+ customers.
+- [Codecov (2021)](https://about.codecov.io/security-update/) – Attackers tampered with the Bash uploader in CI environments, stealing secrets from thousands of environments.
+- [CircleCI (2023)](https://circleci.com/blog/january-4-2023-security-alert/) – Compromise of internal systems led to the theft of environment variables, secrets, and keys from customer pipelines.
+- [Travis CI (2022)](https://www.trendmicro.com/en_us/research/22/j/travis-ci-exposed-secrets-in-public-logs.html) – Leaked secrets in build logs exposed thousands of credentials from public CI jobs.
+- [PHP Git Server (2021)](https://www.bleepingcomputer.com/news/security/php-official-git-repository-hacked-code-backdoored/) – CI pipeline was hijacked to insert malicious code into the official PHP source repository.
+- [SolarMarker via Jenkins (2022)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Threat actors exploited Jenkins pipelines to propagate SolarMarker malware through compromised software builds.
+- [Codecov-like Bash Uploader Imitation (2021)](https://www.reversinglabs.com/blog/ci/cd-security-breaches-update-software-security-approach) – Malicious clones of popular CI/CD tools distributed malware in CI environments.
 
 
-
-## 13. Monitor for Compromised Developer Devices
-
-Even if your backend is locked down, all it takes is one developer's infected laptop to sink the ship — especially if their Git credentials or VPN access isn’t tightly secured.
-
-Suggestions:
-- Use **Endpoint Detection & Response (EDR) tools** like CrowdStrike, SentinelOne, or open-source tools like Wazuh.
-- **Disable automatic token caching** in CLI tools like GitHub CLI, AWS CLI.
-- **Limit SSH agent forwarding**, especially on jump boxes and bastion hosts.
-- **Restrict privileged developer laptops from using public Wi-Fi** or enforce VPN-only policies.
-
-## 14. Implement Just-In-Time (JIT) Privileges
-Developers often have standing access to sensitive infrastructure — production databases, cloud consoles, CI/CD secrets — even if they only need it occasionally. This always-on access increases the blast radius if their account or machine is compromised.
-
-JIT access ensures elevated permissions are granted temporarily, on-demand, with approval, and revoked automatically after use — reducing the attack surface dramatically.
-
-How to Implement JIT Privileges:
-
-- **AWS IAM + SSO + Identity Center**
-Use AWS IAM Identity Center with permission sets and short-duration assume-role sessions.
-Example: Developers authenticate via Okta/Azure AD → Request role access (e.g., AdminAccess) → Session expires in 1 hour.
-
-- **Azure PIM (Privileged Identity Management)**: With Azure PIM, users can request admin roles temporarily (e.g., Global Admin, Key Vault Contributor).
-Requests can require approval, MFA, and justification.
-Auditable and integrated with Microsoft Defender for Cloud alerts.
-
-- **Teleport Access Requests**
-Teleport enables JIT SSH/Kubernetes/database access via Slack, Jira, or web UI.
-Example: dev@company.com requests production DB access → manager approves via Slack → access expires in 60 min.
-
-- **StrongDM or Boundary (HashiCorp)**
-Tools like StrongDM or Boundary provide identity-based JIT session brokering for infrastructure without exposing raw credentials.
+Best Practices:
+- **Use ephemeral environments**: Rebuild containers and runners on every job.
+- **Restrict secrets exposure**: Never expose all secrets to every job; use secret-scoping (e.g., GitHub Actions' env, GitLab CI's protected: true).
+- **Require commit signature**: Verification before running deploy jobs.
+- **Use OpenID Connect (OIDC)**: to grant temporary cloud permissions via short-lived tokens (instead of long-lived API keys).
+- **Audit your pipeline dependencies**: Install only trusted tools and lock versions.
+- **Pipeline Isolation & Segmentation**: eparate pipelines by environment: Use different pipelines/runners for dev, staging, and production with appropriate privilege levels.
 
 
-## 15. Secure Coding: Write Code That Resists Attacks
+### 13. Secure Coding: Write Code That Resists Attacks
 
 Developers must write code that is not only functional but also resilient to common attacks. The OWASP Top 10 outlines the most critical web application security risks. Here are key practices:
 
@@ -590,43 +564,7 @@ cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (usern
 
 ```
 
-## 16. Security Logging & Alerting: Detecting Threats Before They Strike
-
-Even with the strongest incident response plan, early detection remains your best defense. Attackers often linger in systems undetected for weeks. Logging, monitoring, and alerting provide the first line of detection, giving your team the visibility and response time needed to mitigate damage.
-
-“You can’t defend what you can’t see.”
-
-Centralizing developer logs using SIEM (Security Information and Event Management) tools is essential for effective threat detection and response. A well-configured SIEM can help you:
-
-Detect lateral movement across developer machines and infrastructure.
-
-Correlate developer activity with alerts from cloud systems such as AWS GuardDuty, GitHub audit logs, and other telemetry sources.
-
-Set up anomaly detection alerts for suspicious behavior—such as unauthorized use of scp at unusual hours, or code pushes from unknown IP addresses.
-
-By aggregating and analyzing logs in real time, SIEM platforms provide the visibility needed to identify breaches early and respond before damage is done.
-
-
-Set up anomaly detection alerts (e.g., "scp at 3AM", "unknown IP used for Git push").
-
-References & Further Reading: Security Logging & Alerting
-
-General Logging & SIEM
-- [NIST SP 800-92: Guide to Computer Security Log Management](https://csrc.nist.gov/publications/detail/sp/800-92/final) — Foundational framework for security logging and log analysis.
-- [Introduction to SIEM](https://www.rapid7.com/fundamentals/siem/) by Rapid7 — A beginner-friendly overview of what SIEM systems are and how they help.
-- [Elastic SIEM Overview](https://www.elastic.co/what-is/siem) — Introduction to building SIEM solutions using the Elastic Stack.
-- [Wazuh SIEM + XDR Documentation](https://documentation.wazuh.com/current/index.html) — Open-source security monitoring platform with integrated log analysis and threat detection.
-- [Graylog Log Management Guide](https://go2.graylog.org/rs/graylog/images/Graylog_Security_Log_Management_Best_Practices.pdf) — Practical tips for organizing and analyzing logs effectively.
-
-
-Anomaly Detection Tools
-- [Falco (CNCF)](https://falco.org/) — Cloud-native runtime threat detection for containers and Linux hosts.
-- [Osquery](https://osquery.io/) — Query your endpoints like a database: processes, users, network, etc.
-- [MITRE ATT&CK Framework](https://attack.mitre.org/) — Map attacker behavior to logs and detection patterns.
-
-
-
-## 17. Security Testing: Shift Left and Catch Issues Early
+### 14. Security Testing: Shift Left and Catch Issues Early
 
 Shifting security left means integrating security practices early in the software development lifecycle (SDLC), minimizing vulnerabilities before code reaches production. Here's how to build a proactive and automated security testing process:
 
@@ -650,48 +588,53 @@ Additional References
 - [Microsoft Security Development Lifecycle](https://www.microsoft.com/en-us/securityengineering/sdl)
 - [OWASP ZAP Tutorials](https://www.zaproxy.org/docs/)
 
-## 18. Incident Response: Be Prepared for the Worst
 
-Even the most secure systems are not immune to breaches. What distinguishes resilient organizations is how prepared they are to respond. An effective Incident Response (IR) plan minimizes impact, protects critical assets, and accelerates recovery.
+## Part IV — Access & Infrastructure
 
-Following the NIST Computer Security Incident Handling Guide (SP 800-61r2) model, here's a robust breakdown:
+*Who can reach what, and for how long. Shrink the blast radius: no standing production access, no flat networks, no permanent cloud admins.*
+
+### 15. VPN connection is required to access critical resource
+   2FA on VPN Access
+
+To strengthen security, VPN authentication must require Two-Factor Authentication (2FA) using one of the following:
+OTP-based authentication (Google Authenticator, Authy, 1Password)
+
+VPN Providers That Support 2FA
+
+🔒 2FA is Mandatory for Critical Services
+
+All employees and contractors must enable 2FA on:
+✅ Cloud accounts (AWS.)
+✅ Code repositories (GitHub, require Enterprise plan need to consider)
+✅ Internal dashboards & admin panels
+
+Extra resources:
+https://github.com/ukncsc/secure-development-and-deployment
+
+### 16. Implement Just-In-Time (JIT) Privileges
+Developers often have standing access to sensitive infrastructure — production databases, cloud consoles, CI/CD secrets — even if they only need it occasionally. This always-on access increases the blast radius if their account or machine is compromised.
+
+JIT access ensures elevated permissions are granted temporarily, on-demand, with approval, and revoked automatically after use — reducing the attack surface dramatically.
+
+How to Implement JIT Privileges:
+
+- **AWS IAM + SSO + Identity Center**
+Use AWS IAM Identity Center with permission sets and short-duration assume-role sessions.
+Example: Developers authenticate via Okta/Azure AD → Request role access (e.g., AdminAccess) → Session expires in 1 hour.
+
+- **Azure PIM (Privileged Identity Management)**: With Azure PIM, users can request admin roles temporarily (e.g., Global Admin, Key Vault Contributor).
+Requests can require approval, MFA, and justification.
+Auditable and integrated with Microsoft Defender for Cloud alerts.
+
+- **Teleport Access Requests**
+Teleport enables JIT SSH/Kubernetes/database access via Slack, Jira, or web UI.
+Example: dev@company.com requests production DB access → manager approves via Slack → access expires in 60 min.
+
+- **StrongDM or Boundary (HashiCorp)**
+Tools like StrongDM or Boundary provide identity-based JIT session brokering for infrastructure without exposing raw credentials.
 
 
-1. **Detection and Reporting**: Know how to recognize a breach (e.g., unusual system behavior, alerts from monitoring tools). Report immediately to the security team.
-
-2. **Containment**: Isolate affected systems to prevent spread (e.g., disconnect from network, revoke compromised credentials).
-
-3. **Eradication**: Identify and remove the cause (e.g., patch vulnerability, remove malware).
-
-4. **Recovery**: Restore systems from clean backups and monitor for recurrence.
-
-5. **Post-Incident Analysis**: Conduct a retrospective to improve defenses.
-
-
-Authoritative Frameworks
-
-- [**NIST SP 800-61r2: Computer Security Incident Handling Guide**](https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final)
-- [**SANS Incident Handler's Handbook**](https://www.sans.org/white-papers/1741/)
-- [**MITRE ATT&CK Framework**](https://attack.mitre.org/) – Useful for mapping Tactics, Techniques, and Procedures (TTPs) in forensic stages
-
----
-Sample Playbooks
-
-- [**AWS Incident Response Guide**](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-ir.html)
-- [**Google Cloud Incident Response Guide**](https://cloud.google.com/security/incident-response)
-- [**Microsoft 365 IR Framework**](https://learn.microsoft.com/en-us/security/compass/incident-response-overview)
-
----
-Open Source Toolkits
-
-- [**GRR Rapid Response** (remote forensics)](https://github.com/google/grr)
-- [**TheHive + Cortex** (collaborative incident handling)](https://thehive-project.org/)
-- [**Zeek** (network traffic analysis)](https://zeek.org/)
-
-
-
-
-## 19. Cloud Security: Shared Responsibility Model
+### 17. Cloud Security: Shared Responsibility Model
 
 When using cloud providers (AWS, Azure, GCP), remember that security is a shared responsibility. The cloud provider secures the infrastructure, but you are responsible for securing your data and applications.
 
@@ -766,3 +709,79 @@ IaC Security Tools & Resources
 - [Terraform Security Best Practices](https://developer.hashicorp.com/terraform/tutorials/security/overview)
 
 
+## Part V — Detect & Respond
+
+*Assume breach. The question isn't if something slips through — it's how fast you see it and how cleanly you contain it.*
+
+### 18. Security Logging & Alerting: Detecting Threats Before They Strike
+
+Even with the strongest incident response plan, early detection remains your best defense. Attackers often linger in systems undetected for weeks. Logging, monitoring, and alerting provide the first line of detection, giving your team the visibility and response time needed to mitigate damage.
+
+“You can’t defend what you can’t see.”
+
+Centralizing developer logs using SIEM (Security Information and Event Management) tools is essential for effective threat detection and response. A well-configured SIEM can help you:
+
+Detect lateral movement across developer machines and infrastructure.
+
+Correlate developer activity with alerts from cloud systems such as AWS GuardDuty, GitHub audit logs, and other telemetry sources.
+
+Set up anomaly detection alerts for suspicious behavior—such as unauthorized use of scp at unusual hours, or code pushes from unknown IP addresses.
+
+By aggregating and analyzing logs in real time, SIEM platforms provide the visibility needed to identify breaches early and respond before damage is done.
+
+
+Set up anomaly detection alerts (e.g., "scp at 3AM", "unknown IP used for Git push").
+
+References & Further Reading: Security Logging & Alerting
+
+General Logging & SIEM
+- [NIST SP 800-92: Guide to Computer Security Log Management](https://csrc.nist.gov/publications/detail/sp/800-92/final) — Foundational framework for security logging and log analysis.
+- [Introduction to SIEM](https://www.rapid7.com/fundamentals/siem/) by Rapid7 — A beginner-friendly overview of what SIEM systems are and how they help.
+- [Elastic SIEM Overview](https://www.elastic.co/what-is/siem) — Introduction to building SIEM solutions using the Elastic Stack.
+- [Wazuh SIEM + XDR Documentation](https://documentation.wazuh.com/current/index.html) — Open-source security monitoring platform with integrated log analysis and threat detection.
+- [Graylog Log Management Guide](https://go2.graylog.org/rs/graylog/images/Graylog_Security_Log_Management_Best_Practices.pdf) — Practical tips for organizing and analyzing logs effectively.
+
+
+Anomaly Detection Tools
+- [Falco (CNCF)](https://falco.org/) — Cloud-native runtime threat detection for containers and Linux hosts.
+- [Osquery](https://osquery.io/) — Query your endpoints like a database: processes, users, network, etc.
+- [MITRE ATT&CK Framework](https://attack.mitre.org/) — Map attacker behavior to logs and detection patterns.
+
+
+### 19. Incident Response: Be Prepared for the Worst
+
+Even the most secure systems are not immune to breaches. What distinguishes resilient organizations is how prepared they are to respond. An effective Incident Response (IR) plan minimizes impact, protects critical assets, and accelerates recovery.
+
+Following the NIST Computer Security Incident Handling Guide (SP 800-61r2) model, here's a robust breakdown:
+
+
+1. **Detection and Reporting**: Know how to recognize a breach (e.g., unusual system behavior, alerts from monitoring tools). Report immediately to the security team.
+
+2. **Containment**: Isolate affected systems to prevent spread (e.g., disconnect from network, revoke compromised credentials).
+
+3. **Eradication**: Identify and remove the cause (e.g., patch vulnerability, remove malware).
+
+4. **Recovery**: Restore systems from clean backups and monitor for recurrence.
+
+5. **Post-Incident Analysis**: Conduct a retrospective to improve defenses.
+
+
+Authoritative Frameworks
+
+- [**NIST SP 800-61r2: Computer Security Incident Handling Guide**](https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final)
+- [**SANS Incident Handler's Handbook**](https://www.sans.org/white-papers/1741/)
+- [**MITRE ATT&CK Framework**](https://attack.mitre.org/) – Useful for mapping Tactics, Techniques, and Procedures (TTPs) in forensic stages
+
+---
+Sample Playbooks
+
+- [**AWS Incident Response Guide**](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-ir.html)
+- [**Google Cloud Incident Response Guide**](https://cloud.google.com/security/incident-response)
+- [**Microsoft 365 IR Framework**](https://learn.microsoft.com/en-us/security/compass/incident-response-overview)
+
+---
+Open Source Toolkits
+
+- [**GRR Rapid Response** (remote forensics)](https://github.com/google/grr)
+- [**TheHive + Cortex** (collaborative incident handling)](https://thehive-project.org/)
+- [**Zeek** (network traffic analysis)](https://zeek.org/)
