@@ -58,6 +58,40 @@ It adds an extra layer of security, making it much harder for attackers to explo
 
 For security best practices, developers should rotate their SSH keys every month to minimize the risk of compromise. Regular key rotation helps prevent unauthorized access in case a key is exposed or compromised.
 
+### 🔐 Maximum Security: Store Your SSH Key on a YubiKey (FIDO2)
+
+![alt text](github_yubikey.webp)
+
+Even a passphrase-protected SSH key still lives on disk — and anything on disk can be copied. If your laptop gets popped by malware, info-stealer, or a malicious `postinstall` script, the attacker walks away with `~/.ssh/id_ed25519` and just needs to crack (or keylog) the passphrase.
+
+The fix: **don't store the private key on disk at all.** Generate a FIDO2/resident SSH key directly on a hardware token like a YubiKey. The private key material never leaves the device, and every `git push` requires a physical touch on the key. No touch = no auth. Steal the laptop, still can't push.
+
+**Why this is the gold standard for pushing to GitHub:**
+- Private key is non-exportable — malware literally cannot exfiltrate it
+- Physical presence check (touch-to-authenticate) stops remote abuse even if the machine is fully compromised
+- Works with OpenSSH 8.2+ natively — no extra agents, no GPG dance
+- Same key can sign commits (`gpg.format ssh`) so auth *and* commit signing are hardware-backed
+
+**Generate a resident SSH key on the YubiKey:**
+```bash
+ssh-keygen -t ed25519-sk -O resident -O application=ssh:github -O verify-required -C "github-yubikey"
+```
+
+- `-t ed25519-sk` → hardware-backed Ed25519 key
+- `-O resident` → key can be pulled back onto any machine with `ssh-keygen -K` (no backup file needed)
+- `-O verify-required` → requires PIN *and* touch on every use (defense in depth)
+
+**Pin the key for GitHub pushes only:**
+```bash
+git config --global core.sshCommand 'ssh -i ~/.ssh/id_ed25519_sk -o IdentitiesOnly=yes'
+```
+
+The `IdentitiesOnly=yes` flag prevents SSH from leaking other identities to the server. Add the public key (`id_ed25519_sk.pub`) to GitHub → Settings → SSH keys, and every push now demands a physical touch.
+
+**Recovery:** Buy **two** YubiKeys and enroll both up front. If you lose one, you're not locked out of your own repos at 2 AM on a Friday.
+
+Full walkthrough: [YubiKey + SSH + Git: Super-Secure Your Development Workflow](https://medium.com/@harrishcluo/yubikey-ssh-git-super-secure-your-development-workflow-2-2-1899379fb882)
+
 ## 2. Don't Let Hackers Impersonate You, Lock Down Commits with GPG
 Why would a hacker forge your commits? How do they pull it off?
 - **Sneak in malicious code**: By masquerading as a trusted contributor, they slip dangerous payloads into your codebase.
