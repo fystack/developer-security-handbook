@@ -702,6 +702,7 @@ Logging and Monitoring Resources
 - [Azure Monitor Docs](https://learn.microsoft.com/en-us/azure/azure-monitor/overview)
 
 IaC Security Tools & Resources
+- [Darkmoon](https://github.com/ASCIT31/Dark-Moon) - Open source autonomous AI penetration testing platform covering web, API, Active Directory and Kubernetes, fully self hosted and local
 - [Checkov](https://github.com/bridgecrewio/checkov)
 - [tfsec](https://github.com/aquasecurity/tfsec)
 - [Checkov Documentation](https://www.checkov.io/)
