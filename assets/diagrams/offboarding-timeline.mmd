@@ -1,0 +1,4 @@
+flowchart LR
+    A["Hour 0<br/>Disable SSO,<br/>kill sessions"] --> B["Hour 1<br/>Revoke GitHub, cloud,<br/>VPN, SaaS access"]
+    B --> C["Day 1<br/>Rotate shared secrets,<br/>recover device"]
+    C --> D["Week 1<br/>Review audit logs,<br/>confirm no access left"]

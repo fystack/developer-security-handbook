@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    actor Atk as Attacker
+    participant Src as Untrusted content<br/>(README, issue, web page)
+    actor Dev as You
+    participant Agent as AI agent
+    participant Sys as Your machine<br/>(files, shell, network)
+    Atk->>Src: Plant hidden instructions
+    Dev->>Agent: "Summarize this repo"
+    Agent->>Src: Fetch content
+    Src-->>Agent: Content + hidden instructions
+    Agent->>Sys: Read ~/.ssh, .env, tokens
+    Agent->>Atk: Send data out

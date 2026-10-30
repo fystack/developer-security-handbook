@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    actor Dev as Developer
+    participant Broker as Access broker<br/>(Teleport / PIM / Identity Center)
+    actor Mgr as Approver
+    participant Prod as Production DB
+    Dev->>Broker: Request access + ticket + reason
+    Broker->>Mgr: Approval request (Slack)
+    Mgr-->>Broker: Approve for 60 min
+    Broker-->>Dev: Short-lived credential
+    Dev->>Prod: Connect (session logged)
+    Note over Broker,Prod: Timer expires
+    Broker->>Prod: Revoke credential automatically

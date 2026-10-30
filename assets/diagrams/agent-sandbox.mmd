@@ -1,0 +1,8 @@
+flowchart LR
+    subgraph Sandbox["Container or VM, no real credentials"]
+        Agent["AI agent"] --> Repo["Copy of the repo"]
+    end
+    Agent -. "approval required" .-> Net["Network access"]
+    Agent -. "approval required" .-> Shell["Shell commands"]
+    Agent -. "blocked" .-> Keys["~/.ssh, ~/.aws, .env"]
+    Agent -. "blocked" .-> Prod["Production and CI secrets"]
