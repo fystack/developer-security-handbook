@@ -1,0 +1,6 @@
+flowchart LR
+    A["Unexpected message asks for a<br/>credential, approval or command"] --> B["Stop. Don't click<br/>or run anything"]
+    B --> C["Verify via a channel YOU choose<br/>(known number, official site)"]
+    C --> D{"Confirmed?"}
+    D -- Yes --> E["Proceed carefully"]
+    D -- No --> F["Report to security.<br/>Don't reply"]

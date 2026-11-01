@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    actor Atk as Logged-in user (attacker)
+    participant API as API
+    participant DB as Database
+    Atk->>API: GET /invoices/1001 (own invoice)
+    API->>DB: SELECT * WHERE id = 1001
+    DB-->>Atk: OK
+    Atk->>API: GET /invoices/1002 (someone else's)
+    rect rgb(255, 228, 228)
+    API->>DB: SELECT * WHERE id = 1002  (no owner check)
+    DB-->>Atk: Leaks another customer's invoice
+    end
+    Note over API,DB: Fix: WHERE id = 1002 AND owner_id = current_user

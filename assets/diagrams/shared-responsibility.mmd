@@ -1,0 +1,10 @@
+flowchart TB
+    subgraph You["You secure"]
+        direction LR
+        A["Data and encryption keys"] --- B["Identity and access (IAM)"] --- C["App code and config"] --- D["Network rules, security groups"] --- E["OS and containers you run"]
+    end
+    subgraph Provider["Provider secures"]
+        direction LR
+        F["Physical data centers"] --- G["Hardware and hypervisor"] --- H["Managed service internals"] --- I["Global network"]
+    end
+    You --> Provider

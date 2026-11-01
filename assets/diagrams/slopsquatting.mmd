@@ -1,0 +1,6 @@
+flowchart LR
+    A["Model suggests a<br/>made-up package name"] --> B["Attacker registers<br/>that name on npm / PyPI"]
+    B --> C["Next developer asks<br/>the same question"]
+    C --> D["npm install"]
+    D --> E["Install script runs:<br/>secrets stolen"]
+    F["Your check: does it exist,<br/>is it old, is it the one you meant?"] -. "stops it here" .-> D

@@ -1,0 +1,12 @@
+flowchart LR
+    subgraph Entry["How they get in"]
+        A["Phishing and<br/>fake recruiters"]
+        B["Malicious packages<br/>and AI-tool abuse"]
+        C["Leaked secrets"]
+        D["Stolen device<br/>or session"]
+    end
+    Entry --> E["Developer laptop<br/>and accounts"]
+    E --> F["Source code<br/>and CI/CD"]
+    E --> G["Cloud and<br/>production"]
+    F --> H["Poisoned releases"]
+    G --> I["Data theft,<br/>outages, ransom"]

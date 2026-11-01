@@ -1,0 +1,9 @@
+flowchart LR
+    U["Developer"] --> I["Identity provider<br/>SSO + hardware-key MFA"]
+    I -->|"device healthy?<br/>role allowed?"| P["VPN or access proxy"]
+    P --> A["Production DB"]
+    P --> B["Admin panel"]
+    P --> C["Bastion / SSH"]
+    X["Internet"] -. "blocked" .-> A
+    X -. "blocked" .-> B
+    X -. "blocked" .-> C
